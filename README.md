@@ -173,7 +173,7 @@ MIT
 
 ## Resources
 
-- [Shogun Documentation](https://shogun-info.vercel.app)
+- [Shogun Documentation](https://shogun-eco.xyz)
 - [Shogun Core](https://github.com/scobru/shogun-core)
 - [GunDB Documentation](https://gun.eco)
 
