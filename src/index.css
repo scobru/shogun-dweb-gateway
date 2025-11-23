@@ -1,14 +1,12 @@
-/* === SHOGUN THEME - Import tema condiviso === */
-@import "shogun-theme/styles/variables.css";
-@import "shogun-theme/styles/base.css";
-@import "shogun-theme/styles/daisyui-overrides.css";
-
-@import "shogun-onion/onion.css";
-
 @import "tailwindcss";
 @plugin "daisyui";
 
 /* === CUSTOM STYLES PER SHOGUN-STARTER === */
+
+/* Font family */
+body {
+  font-family: 'JetBrains Mono', monospace;
+}
 
 /* Layout generale dell'app */
 .app-shell {
@@ -17,7 +15,7 @@
   flex-direction: column;
   background: radial-gradient(circle at top left, rgba(79, 107, 246, 0.14), transparent 55%),
               radial-gradient(circle at bottom right, rgba(45, 212, 191, 0.1), transparent 55%),
-              var(--body-bg, #020617);
+              hsl(var(--b1));
 }
 
 /* Variante più chiara per il tema light */
@@ -46,9 +44,9 @@
 
 /* Header */
 .navbar-custom {
-  background-color: color-mix(in srgb, var(--navbar-bg) 88%, transparent);
+  background-color: color-mix(in srgb, hsl(var(--b1)) 88%, transparent);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid hsl(var(--bc) / 0.2);
   padding: 0.85rem 0;
   position: sticky;
   top: 0;
@@ -79,7 +77,7 @@
 
 .navbar-subtitle {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: hsl(var(--bc) / 0.7);
 }
 
 /* Badge stato autenticazione */
@@ -104,7 +102,7 @@
 
 .badge-custom.success {
   background: rgba(22, 163, 74, 0.12);
-  color: var(--success-color);
+  color: hsl(var(--su));
 }
 
 .badge-custom.success .badge-dot {
@@ -112,13 +110,13 @@
 }
 
 .badge-custom.error {
-  background-color: var(--error-bg);
-  color: var(--error-color);
-  border: 1px solid var(--error-color);
+  background-color: hsl(var(--er) / 0.1);
+  color: hsl(var(--er));
+  border: 1px solid hsl(var(--er));
 }
 
 .badge-custom.error .badge-dot {
-  background: var(--error-color);
+  background: hsl(var(--er));
 }
 
 /* Card principale */
@@ -142,8 +140,8 @@
 
 /* Footer */
 .app-footer {
-  border-top: 1px solid var(--border-color);
-  background: color-mix(in srgb, var(--navbar-bg) 90%, transparent);
+  border-top: 1px solid hsl(var(--bc) / 0.2);
+  background: color-mix(in srgb, hsl(var(--b1)) 90%, transparent);
   margin-top: 3rem;
 }
 
