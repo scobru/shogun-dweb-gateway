@@ -4,19 +4,18 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import {
   ShogunButtonProvider,
-  ShogunButton,
-  useShogun,
 } from "shogun-button-react";
 import { shogunConnector } from "shogun-button-react";
 import type { ShogunCore } from "shogun-core";
 import Gun from "gun";
-import { ThemeToggle } from "./components/ui/ThemeToggle";
-import ExampleContent from "./components/ExampleContent";
-import logo from "/logo.svg";
+import "gun/sea";
+import "gun/lib/yson.js"
+import DWebSaaSApp from "./components/dweb/DWebSaaSApp";
+import DWebViewer from "./components/dweb/DWebViewer";
+import DWebFileServer from "./components/dweb/DWebFileServer";
 
 import "./index.css";
 import "shogun-relays";
@@ -38,105 +37,10 @@ declare global {
   }
 }
 
-interface MainAppProps {
-  shogun?: ShogunCore;
-  location?: ReturnType<typeof useLocation>;
-}
 
-// Main component that uses the auth context
-const MainApp: React.FC<MainAppProps> = () => {
-  const { isLoggedIn } = useShogun();
-
-  return (
-    <div className="app-shell">
-      <header className="navbar-custom">
-        <div className="navbar-inner">
-          <div className="navbar-title">
-            <img src={logo} alt="Shogun Starter" className="w-12 h-12" />
-            <div>
-              <span className="font-semibold">Shogun Starter</span>
-              <p className="navbar-subtitle">
-                Decentralized application template
-              </p>
-            </div>
-          </div>
-          <ThemeToggle />
-        </div>
-      </header>
-
-      <main className="app-main">
-        <div className="flex justify-center mb-6">
-          <div className={`badge-custom ${isLoggedIn ? "success" : "error"}`}>
-            <span className="badge-dot" />
-            <span>{isLoggedIn ? "Authenticated" : "Not authenticated"}</span>
-          </div>
-        </div>
-
-        {/* Authentication Card */}
-        <div className="card content-card mb-6 p-8">
-          <div className="card-body">
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold mb-2">Authentication</h2>
-              <p className="text-secondary">
-                Connect with your preferred method and start building.
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <ShogunButton />
-            </div>
-          </div>
-        </div>
-
-        {/* Example Content - Replace this with your app content */}
-        <ExampleContent />
-      </main>
-
-      <footer className="w-full py-5 px-1 mt-auto">
-        <div className="w-full">
-          <ul className="menu menu-horizontal w-full">
-            <div className="flex justify-center items-center gap-2 text-sm w-full">
-              <div className="text-center">
-                <a href="https://github.com/scobru/shogun-starter" target="_blank" rel="noreferrer" className="link">
-                  Fork me
-                </a>
-              </div>
-              <span>·</span>
-              <div className="flex justify-center items-center gap-2">
-                <p className="m-0 text-center">
-                  Built with 
-                  <svg xmlns="http://www.w3.org/2000/svg" className="inline-block h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                  </svg>
-                  at
-                </p>
-                <a
-                  className="flex justify-center items-center gap-1"
-                  href="https://shogun-eco.xyz/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <span className="link">Shogun Ecosystem</span>
-                </a>
-                <span>·</span>
-                <span className="text-center">by <a href="https://github.com/scobru" target="_blank" rel="noreferrer" className="link">scobru</a></span>
-              </div>
-              <span>·</span>
-              <div className="text-center">
-                <a href="https://t.me/shogun_eco" target="_blank" rel="noreferrer" className="link">
-                  Support
-                </a>
-              </div>
-            </div>
-          </ul>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-// Wrapper for MainApp that provides access to useLocation
-const MainAppWithLocation: React.FC<{ shogun: ShogunCore }> = () => {
-  return <MainApp />;
+// Home redirects to DWeb app
+const Home: React.FC = () => {
+  return <Navigate to="/dweb" replace />;
 };
 
 interface ShogunAppProps {
@@ -174,11 +78,12 @@ function ShogunApp({ shogun }: ShogunAppProps) {
         onError={handleError}
       >
         <Routes>
-          <Route
-            path="/"
-            element={<MainAppWithLocation shogun={shogun} />}
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/dweb" element={<DWebSaaSApp />} />
+          <Route path="/dweb/view/:username" element={<DWebViewer />} />
+          <Route path="/dweb/view/:username/:pagename" element={<DWebViewer />} />
+          <Route path="/dweb/file/:username/:pagename/*" element={<DWebFileServer />} />
+          <Route path="*" element={<Navigate to="/dweb" replace />} />
         </Routes>
       </ShogunButtonProvider>
     </Router>
@@ -203,13 +108,13 @@ function App() {
         const peersToUse =
           fetchedRelays && fetchedRelays.length > 0
             ? fetchedRelays
-            : ["https://peer.wallie.io/gun"];
+            : ["https://shogun-relay.scobrudot.dev/gun"];
 
         setRelays(peersToUse);
       } catch (error) {
         console.error("Error fetching relays:", error);
         // Fallback to default peer
-        setRelays(["https://peer.wallie.io/gun"]);
+        setRelays(["https://shogun-relay.scobrudot.dev/gun"]);
       } finally {
         setIsLoadingRelays(false);
       }

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DWeb Platform - Pubblica le tue app decentralizzate</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 20px 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 1.5em;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .username {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    /* Auth Forms */
+    .auth-container {
+      max-width: 500px;
+      margin: 100px auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .auth-container h2 {
+      color: #667eea;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: #999;
+      transition: color 0.3s;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .auth-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .dashboard h2 {
+      color: #667eea;
+      margin-bottom: 30px;
+    }
+
+    .app-card {
+      background: #f8f9ff;
+      border: 2px solid #e0e0e0;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .app-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .app-url {
+      color: #667eea;
+      font-weight: 600;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .app-url:hover {
+      text-decoration: underline;
+    }
+
+    .upload-area {
+      border: 3px dashed #667eea;
+      border-radius: 15px;
+      padding: 40px;
+      text-align: center;
+      background: #f8f9ff;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      border-color: #764ba2;
+      background: #f0f2ff;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login/Register View -->
+  <div id="authView" class="auth-container">
+    <h2>🌐 DWeb Platform</h2>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Registrati</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Il tuo username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="La tua password">
+      </div>
+      <button class="btn btn-primary" style="width: 100%;" onclick="handleLogin()">Accedi</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="registerForm" class="hidden">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="registerUsername" placeholder="Scegli un username (sarà il tuo dominio)">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="registerPassword" placeholder="Scegli una password sicura">
+      </div>
+      <div class="form-group">
+        <label>Conferma Password</label>
+        <input type="password" id="registerPasswordConfirm" placeholder="Ripeti la password">
+      </div>
+      <button class="btn btn-primary" style="width: 100%;" onclick="handleRegister()">Registrati</button>
+      <p style="margin-top: 15px; font-size: 0.9em; color: #666; text-align: center;">
+        Il tuo sito sarà disponibile su: <code id="previewUrl">username.dweb.app</code>
+      </p>
+    </div>
+
+    <div class="status" id="authStatus"></div>
+  </div>
+
+  <!-- Dashboard View -->
+  <div id="dashboardView" class="hidden">
+    <div class="app-container">
+      <div class="header">
+        <h1>🌐 DWeb Platform</h1>
+        <div class="user-menu">
+          <span class="username" id="currentUsername"></span>
+          <button class="btn btn-secondary" onclick="handleLogout()">Logout</button>
+        </div>
+      </div>
+
+      <div class="dashboard">
+        <h2>Le tue App Pubblicate</h2>
+        
+        <div id="appsList"></div>
+
+        <h2 style="margin-top: 40px;">📤 Pubblica una nuova App</h2>
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+          <div style="font-size: 3em; margin-bottom: 15px;">📄</div>
+          <div style="font-size: 1.2em; color: #667eea; margin-bottom: 10px; font-weight: 600;">
+            Trascina qui il tuo file HTML o clicca per selezionare
+          </div>
+          <div style="color: #999; font-size: 0.9em;">Supporta file .html o .htm</div>
+        </div>
+        <input type="file" id="fileInput" accept=".html,.htm" style="display: none;">
+
+        <div id="fileInfo" class="hidden" style="margin-top: 20px; padding: 20px; background: #f8f9ff; border-radius: 10px;">
+          <div id="fileName" style="font-weight: 600; margin-bottom: 15px;"></div>
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label style="font-weight: 600; margin-bottom: 5px; display: block;">Nome della pagina (URL):</label>
+            <input type="text" id="pageNameInput" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;" placeholder="es. mia-app">
+            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+              URL: <code id="pageUrlPreview">username.dweb.app/nome</code>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="publishApp()">🚀 Pubblica App</button>
+            <button class="btn btn-secondary" onclick="clearFile()">Annulla</button>
+          </div>
+        </div>
+
+        <div class="status" id="publishStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+  <script>
+    const RELAY_URL = 'https://shogun-relay.scobrudot.dev/gun';
+    const PLATFORM_DOMAIN = 'dweb.app'; // Il tuo dominio
+
+    let gun, user, currentUser = null;
+    let selectedFile = null;
+
+    // Inizializza Gun
+    gun = new Gun({
+      peers: [RELAY_URL],
+      localStorage: false,
+      radisk: false
+    });
+    user = gun.user().recall({ sessionStorage: true });
+
+    // Check se l'utente è già loggato
+    user.recall({ sessionStorage: true }, (ack) => {
+      if (ack && (ack.pub || user.is?.pub)) {
+        const userPub = user.is?.pub
+        const username =  user.is?.alias
+        
+        currentUser = {
+          username: username,
+          pub: userPub
+        };
+        
+        // Salva anche il mapping se abbiamo l'username
+        if (username && username !== userPub.substring(0, 16)) {
+          saveUserMapping(username, userPub);
+        }
+        
+        showDashboard();
+      }
+    });
+
+    function switchAuthTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (tab === 'login') {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('registerForm').classList.add('hidden');
+      } else {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+        updatePreviewUrl();
+      }
+    }
+
+    function updatePreviewUrl() {
+      const username = document.getElementById('registerUsername').value || 'username';
+      document.getElementById('previewUrl').textContent = `${username}.${PLATFORM_DOMAIN}`;
+    }
+
+    document.getElementById('registerUsername').addEventListener('input', updatePreviewUrl);
+
+    async function handleRegister() {
+      const username = document.getElementById('registerUsername').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+      if (!username || !password) {
+        showAuthStatus('Compila tutti i campi', 'error');
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        showAuthStatus('Le password non corrispondono', 'error');
+        return;
+      }
+
+      showAuthStatus('Registrazione in corso...', 'info');
+
+      user.create(username, password, (ack) => {
+        if (ack.err) {
+          showAuthStatus('Errore: ' + ack.err, 'error');
+          return;
+        }
+
+        // Login automatico dopo registrazione
+        user.auth(username, password, (authAck) => {
+          if (authAck.err) {
+            showAuthStatus('Errore login: ' + authAck.err, 'error');
+            return;
+          }
+
+          // Ottieni la pub key dall'utente autenticato (user.is.pub)
+          const userPub = user.is?.pub || authAck.pub;
+          
+          if (!userPub) {
+            showAuthStatus('Errore: pub key non disponibile', 'error');
+            return;
+          }
+
+          currentUser = {
+            username: username,
+            pub: userPub
+          };
+
+          // Salva il mapping username -> pub key subito dopo la registrazione
+          saveUserMapping(username, userPub);
+          
+          showDashboard();
+        });
+      });
+    }
+
+    async function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!username || !password) {
+        showAuthStatus('Compila tutti i campi', 'error');
+        return;
+      }
+
+      showAuthStatus('Login in corso...', 'info');
+
+      user.auth(username, password, (ack) => {
+        if (ack.err) {
+          showAuthStatus('Errore: ' + ack.err, 'error');
+          return;
+        }
+
+        currentUser = {
+          username: username,
+          pub: user.is?.pub
+        };
+
+        // Salva/aggiorna il mapping username -> pub key al login
+        saveUserMapping(username, user.is?.pub);
+        
+        showDashboard();
+      });
+    }
+
+    function saveUserMapping(username, pub) {
+      // Verifica che i parametri siano validi
+      if (!username || !pub || typeof username !== 'string' || typeof pub !== 'string') {
+        console.warn('saveUserMapping: parametri invalidi', { username, pub });
+        return;
+      }
+
+      try {
+        // Salva nel nodo globale dweb.users[username]
+        const globalMapping = gun.get('dweb').get('users').get(username);
+        
+        // Salva i campi uno alla volta con un piccolo delay per evitare conflitti
+        // Questo approccio è più robusto in GunDB
+        globalMapping.get('pub').put(String(pub));
+        setTimeout(() => {
+          globalMapping.get('username').put(String(username));
+        }, 50);
+        setTimeout(() => {
+          globalMapping.get('lastUpdated').put(Date.now());
+          console.log('✓ Mapping salvato per', username);
+        }, 100);
+      } catch (error) {
+        console.error('Errore salvataggio mapping:', error);
+      }
+    }
+
+    function handleLogout() {
+      user.leave();
+      currentUser = null;
+      showAuth();
+    }
+
+    function showAuth() {
+      document.getElementById('authView').classList.remove('hidden');
+      document.getElementById('dashboardView').classList.add('hidden');
+    }
+
+    function showDashboard() {
+      document.getElementById('authView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      
+      if (currentUser) {
+        document.getElementById('currentUsername').textContent = currentUser.username;
+        loadUserApps();
+      }
+    }
+
+    function showAuthStatus(message, type) {
+      const statusEl = document.getElementById('authStatus');
+      statusEl.textContent = message;
+      statusEl.className = `status show ${type}`;
+    }
+
+    // File handling
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+        showPublishStatus('Errore: Seleziona solo file HTML', 'error');
+        return;
+      }
+
+      selectedFile = file;
+      document.getElementById('fileName').textContent = `File: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+      
+      // Estrai il nome della pagina dal nome del file (senza estensione)
+      const defaultPageName = file.name.replace(/\.(html|htm)$/i, '').trim();
+      const pageNameInput = document.getElementById('pageNameInput');
+      pageNameInput.value = defaultPageName;
+      updatePageUrlPreview(defaultPageName);
+      
+      // Aggiorna il preview quando l'utente digita
+      pageNameInput.addEventListener('input', (e) => {
+        updatePageUrlPreview(e.target.value || defaultPageName);
+      });
+      
+      document.getElementById('fileInfo').classList.remove('hidden');
+    }
+
+    function updatePageUrlPreview(pageName) {
+      const preview = document.getElementById('pageUrlPreview');
+      if (currentUser && pageName) {
+        preview.textContent = `${pageName}.${currentUser.username}.dweb.app`;
+      } else if (pageName) {
+        preview.textContent = `username.dweb.app/${pageName}`;
+      }
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileInfo').classList.add('hidden');
+    }
+
+    async function publishApp() {
+      if (!selectedFile || !currentUser) return;
+
+      const fileContent = await selectedFile.text();
+      showPublishStatus('Pubblicazione in corso...', 'info');
+
+      // Ottieni il nome della pagina dall'input (o usa il nome del file come default)
+      let pageName = document.getElementById('pageNameInput').value.trim();
+      if (!pageName) {
+        // Fallback: usa il nome del file senza estensione
+        pageName = selectedFile.name.replace(/\.(html|htm)$/i, '').trim();
+      }
+      
+      // Sanitizza il nome della pagina (rimuovi caratteri non validi per URL)
+      pageName = pageName.replace(/[^a-zA-Z0-9_-]/g, '-').replace(/^-+|-+$/g, '');
+      
+      if (!pageName) {
+        showPublishStatus('Errore: nome pagina non valido', 'error');
+        return;
+      }
+
+      // Pubblica l'app sotto l'utente con il nome della pagina
+      // Struttura: user.get('sites').get('nomedellapagina')
+      const sitesNode = user.get('sites');
+      const pageNode = sitesNode.get(pageName);
+
+      pageNode.put({ 
+        html: fileContent,
+        publishedAt: Date.now(),
+        fileName: selectedFile.name,
+        pageName: pageName
+      }, (appAck) => {
+        if (appAck.err) {
+          showPublishStatus('Errore pubblicazione: ' + appAck.err, 'error');
+          return;
+        }
+
+        console.log('App pubblicata con successo!', pageName);
+
+        // Il mapping viene già salvato al login/registrazione
+        // Qui aggiorniamo solo il timestamp per indicare che c'è stata attività
+        saveUserMapping(currentUser.username, currentUser.pub);
+
+        showPublishStatus('✅ App pubblicata con successo!', 'success');
+        clearFile();
+        loadUserApps();
+
+        // Mostra l'URL
+        setTimeout(() => {
+          const appUrl = `${window.location.origin}/dweb/view/${currentUser.username}/${pageName}`;
+          showPublishStatus(`✅ App pubblicata! Visita: ${appUrl}`, 'success');
+        }, 1000);
+      });
+    }
+
+    function loadUserApps() {
+      if (!currentUser) return;
+
+      const appsListEl = document.getElementById('appsList');
+      appsListEl.innerHTML = '<p style="color: #999;">Caricamento app...</p>';
+
+      // Carica tutte le pagine pubblicate
+      const sitesNode = user.get('sites');
+      const apps = [];
+      const appMap = new Map();
+
+      // Ascolta tutte le pagine sotto 'sites'
+      sitesNode.map().on((data, key) => {
+        if (data && data.html && key) {
+          // key è il nome della pagina
+          appMap.set(key, {
+            pageName: key,
+            publishedAt: data.publishedAt,
+            fileName: data.fileName || key + '.html'
+          });
+
+          // Aggiorna la lista
+          updateAppsList(appsListEl, Array.from(appMap.values()));
+        }
+      });
+
+      // Timeout per mostrare "nessuna app" se non ci sono risultati
+      setTimeout(() => {
+        if (appMap.size === 0) {
+          appsListEl.innerHTML = '<p style="color: #999;">Nessuna app pubblicata ancora.</p>';
+        }
+      }, 2000);
+    }
+
+    function updateAppsList(containerEl, apps) {
+      if (apps.length === 0) {
+        containerEl.innerHTML = '<p style="color: #999;">Nessuna app pubblicata ancora.</p>';
+        return;
+      }
+
+      // Ordina per data di pubblicazione (più recente prima)
+      apps.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0));
+
+      containerEl.innerHTML = apps.map(app => {
+        const appUrl = `${app.pageName}.${currentUser.username}.${PLATFORM_DOMAIN}`;
+        const viewUrl = `/dweb/view/${currentUser.username}/${app.pageName}`;
+        const publishedDate = app.publishedAt ? new Date(app.publishedAt).toLocaleString() : 'Sconosciuto';
+        
+        return `
+          <div class="app-card">
+            <a href="${viewUrl}" target="_blank" class="app-url">
+              ${appUrl}
+            </a>
+            <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+              File: ${app.fileName} | Pubblicato il: ${publishedDate}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showPublishStatus(message, type) {
+      const statusEl = document.getElementById('publishStatus');
+      statusEl.textContent = message;
+      statusEl.className = `status show ${type}`;
+      setTimeout(() => {
+        statusEl.classList.remove('show');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DWeb Publisher - Gestione Siti Decentralizzati</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1em;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .upload-area {
+      border: 3px dashed #667eea;
+      border-radius: 15px;
+      padding: 60px 20px;
+      text-align: center;
+      background: #f8f9ff;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #764ba2;
+      background: #f0f2ff;
+      transform: scale(1.02);
+    }
+
+    .upload-icon {
+      font-size: 4em;
+      margin-bottom: 20px;
+    }
+
+    .upload-text {
+      font-size: 1.2em;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .upload-hint {
+      color: #999;
+      font-size: 0.9em;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-info {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9ff;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .file-preview {
+      max-height: 300px;
+      overflow: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 15px 30px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .keys-section {
+      background: #fff9e6;
+      border: 2px solid #ffd700;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .keys-section h3 {
+      color: #b8860b;
+      margin-bottom: 15px;
+    }
+
+    .key-display {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      word-break: break-all;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .copy-btn {
+      padding: 8px 15px;
+      font-size: 0.9em;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .copy-btn:hover {
+      background: #5568d3;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+
+    .viewer-link {
+      margin-top: 20px;
+      padding: 20px;
+      background: #e8f5e9;
+      border-radius: 10px;
+      border: 2px solid #4caf50;
+    }
+
+    .viewer-link a {
+      color: #2e7d32;
+      font-weight: 600;
+      font-size: 1.1em;
+      text-decoration: none;
+    }
+
+    .viewer-link a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌐 DWeb Publisher</h1>
+      <p>Pubblica il tuo sito decentralizzato su GunDB</p>
+    </div>
+
+    <div class="content">
+      <!-- Sezione Chiavi -->
+      <div class="keys-section">
+        <h3>🔑 Le tue chiavi crittografiche</h3>
+        <p style="margin-bottom: 15px;">La tua pubblica key (usa questa in index.html per visualizzare il sito):</p>
+        <div class="key-display" id="pubKeyDisplay">Caricamento chiavi...</div>
+        <button class="copy-btn" onclick="copyPubKey()">Copia Pub Key</button>
+        <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+          <strong>⚠️ Importante:</strong> Le chiavi vengono salvate automaticamente in <code>keys.json</code>. 
+          Se perdi le chiavi private, non potrai più aggiornare il sito.
+        </p>
+      </div>
+
+      <!-- Sezione Upload -->
+      <div class="section">
+        <h2>📤 Pubblica un file HTML</h2>
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">Trascina qui il tuo file HTML o clicca per selezionare</div>
+          <div class="upload-hint">Supporta file .html o .htm</div>
+        </div>
+        <input type="file" id="fileInput" accept=".html,.htm" />
+
+        <div class="file-info" id="fileInfo">
+          <div class="file-name" id="fileName"></div>
+          <button class="btn-secondary" onclick="clearFile()">Annulla</button>
+        </div>
+
+        <div class="button-group">
+          <button class="btn-primary" id="publishBtn" onclick="publishFile()" disabled>
+            🚀 Pubblica sul DWeb
+          </button>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="viewer-link" id="viewerLink" style="display: none;">
+          <p><strong>✅ Pubblicazione completata!</strong></p>
+          <p>Apri <a href="index.html" target="_blank">index.html</a> nel browser per visualizzare il tuo sito.</p>
+        </div>
+      </div>
+
+      <!-- Sezione Istruzioni -->
+      <div class="section">
+        <h2>📖 Come funziona</h2>
+        <ol style="line-height: 2; padding-left: 20px;">
+          <li><strong>Carica il file:</strong> Seleziona o trascina il file HTML che vuoi pubblicare</li>
+          <li><strong>Pubblica:</strong> Clicca su "Pubblica sul DWeb" per caricare il contenuto su GunDB</li>
+          <li><strong>Visualizza:</strong> Apri <code>index.html</code> nel browser per vedere il tuo sito pubblicato</li>
+          <li><strong>Aggiorna:</strong> Quando vuoi aggiornare, carica un nuovo file e ripubblica</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedFile = null;
+    let pubKey = '';
+
+    // Carica le chiavi esistenti
+    async function loadKeys() {
+      try {
+        // Prova prima tramite API
+        const response = await fetch('/api/pubkey');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.pubKey) {
+            pubKey = result.pubKey;
+            document.getElementById('pubKeyDisplay').textContent = pubKey;
+            return;
+          }
+        }
+        
+        // Fallback: prova a leggere keys.json direttamente
+        const keysResponse = await fetch('keys.json');
+        if (keysResponse.ok) {
+          const keys = await keysResponse.json();
+          pubKey = keys.pub;
+          document.getElementById('pubKeyDisplay').textContent = pubKey;
+        } else {
+          document.getElementById('pubKeyDisplay').textContent = 'Nessuna chiave trovata. Genera nuove chiavi pubblicando un file.';
+        }
+      } catch (error) {
+        document.getElementById('pubKeyDisplay').textContent = 'Nessuna chiave trovata. Genera nuove chiavi pubblicando un file.';
+      }
+    }
+
+    // Drag & Drop
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+        showStatus('Errore: Seleziona solo file HTML (.html o .htm)', 'error');
+        return;
+      }
+
+      selectedFile = file;
+      document.getElementById('fileName').textContent = `File selezionato: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+      document.getElementById('fileInfo').classList.add('show');
+      document.getElementById('publishBtn').disabled = false;
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      fileInput.value = '';
+      document.getElementById('fileInfo').classList.remove('show');
+      document.getElementById('publishBtn').disabled = true;
+    }
+
+    function copyPubKey() {
+      if (pubKey) {
+        navigator.clipboard.writeText(pubKey).then(() => {
+          showStatus('Pub Key copiata negli appunti!', 'success');
+        });
+      }
+    }
+
+    async function publishFile() {
+      if (!selectedFile) {
+        showStatus('Errore: Nessun file selezionato', 'error');
+        return;
+      }
+
+      const fileContent = await selectedFile.text();
+      document.getElementById('publishBtn').disabled = true;
+      showStatus('Pubblicazione in corso...', 'info');
+
+      try {
+        const response = await fetch('/dweb/api/publish', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            html: fileContent,
+            fileName: selectedFile.name
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          pubKey = result.pubKey;
+          document.getElementById('pubKeyDisplay').textContent = pubKey;
+          showStatus('✅ ' + result.message, 'success');
+          document.getElementById('viewerLink').style.display = 'block';
+          
+          // Aggiorna il link per visualizzare
+          const viewerLinkEl = document.querySelector('#viewerLink a');
+          if (viewerLinkEl) {
+            viewerLinkEl.href = window.location.origin + '/dweb/index.html';
+          }
+        } else {
+          throw new Error(result.error || 'Errore nella pubblicazione');
+        }
+      } catch (error) {
+        const errorMsg = error.message.includes('fetch') 
+          ? 'Impossibile connettersi al server. Assicurati di aver avviato il server con "npm start" o "node server.js"'
+          : error.message;
+        showStatus('❌ Errore: ' + errorMsg, 'error');
+      } finally {
+        document.getElementById('publishBtn').disabled = false;
+      }
+    }
+
+
+    function showStatus(message, type) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.className = `status show ${type}`;
+      setTimeout(() => {
+        statusEl.classList.remove('show');
+      }, 5000);
+    }
+
+    // Carica le chiavi al caricamento della pagina
+    loadKeys();
+  </script>
+</body>
+</html>
