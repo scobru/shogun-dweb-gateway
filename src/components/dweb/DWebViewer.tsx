@@ -395,12 +395,25 @@ const DWebViewer: React.FC = () => {
               // Modalità GunDB: usa HTML diretto da GunDB
               if (data.html) {
                 console.log('🗄️ [VIEWER] Caricamento da GunDB (modalità gundb)');
-                let htmlContent = data.html;
+                let htmlContent: string;
                 
-                  // Se ci sono multipli file, riscrivi i path relativi per puntare ai file salvati in GunDB
-                  if (data.isDirectory && data.files && Object.keys(data.files).length > 1) {
-                    htmlContent = rewriteGunDBPaths(htmlContent, data.files);
+                // Decode HTML if it's base64 encoded (to avoid GunDB parsing issues with URLs)
+                if (data.htmlEncoding === 'base64') {
+                  try {
+                    htmlContent = decodeURIComponent(escape(atob(data.html)));
+                    console.log('📄 [VIEWER] HTML decodificato da base64');
+                  } catch (e) {
+                    console.error('❌ [VIEWER] Errore decodifica base64:', e);
+                    htmlContent = data.html; // Fallback to raw content
                   }
+                } else {
+                  htmlContent = data.html;
+                }
+                
+                // Se ci sono multipli file, riscrivi i path relativi per puntare ai file salvati in GunDB
+                if (data.isDirectory && data.files && Object.keys(data.files).length > 1) {
+                  htmlContent = rewriteGunDBPaths(htmlContent, data.files);
+                }
                 
                 setAppHtml(htmlContent);
                 setIsLoading(false);
@@ -469,7 +482,18 @@ const DWebViewer: React.FC = () => {
                 // Modalità GunDB: usa HTML diretto da GunDB
                 if (data.html) {
                   console.log('🗄️ [VIEWER] Caricamento da GunDB (modalità gundb, fallback)');
-                  let htmlContent = data.html;
+                  let htmlContent: string;
+                  
+                  // Decode HTML if it's base64 encoded
+                  if (data.htmlEncoding === 'base64') {
+                    try {
+                      htmlContent = decodeURIComponent(escape(atob(data.html)));
+                    } catch (e) {
+                      htmlContent = data.html;
+                    }
+                  } else {
+                    htmlContent = data.html;
+                  }
                   
                   // Se ci sono multipli file, riscrivi i path relativi
                   if (data.isDirectory && data.files && Object.keys(data.files).length > 1) {
@@ -509,7 +533,18 @@ const DWebViewer: React.FC = () => {
                   loadFromIPFS(data.ipfsHash, isDirectory, mainHtmlPath);
                 } else if (data.html) {
                   console.log('🗄️ [VIEWER] Fallback: caricamento da GunDB (HTML presente)');
-                  let htmlContent = data.html;
+                  let htmlContent: string;
+                  
+                  // Decode HTML if it's base64 encoded
+                  if (data.htmlEncoding === 'base64') {
+                    try {
+                      htmlContent = decodeURIComponent(escape(atob(data.html)));
+                    } catch (e) {
+                      htmlContent = data.html;
+                    }
+                  } else {
+                    htmlContent = data.html;
+                  }
                   
                   // Se ci sono multipli file, riscrivi i path relativi
                   if (data.isDirectory && data.files && Object.keys(data.files).length > 1) {

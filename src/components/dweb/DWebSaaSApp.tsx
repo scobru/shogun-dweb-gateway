@@ -413,7 +413,11 @@ const DWebSaaSApp: React.FC = () => {
         const fileContent = await mainHtmlFile.text();
         console.log('📄 [GUNDB] Main HTML file read, content size:', fileContent.length, 'characters');
         
-        dataToSave.html = fileContent;
+        // Encode HTML in base64 to avoid GunDB/SEA parsing issues with URLs in the HTML
+        // GunDB tries to parse URLs as keys, causing errors like "Cannot set properties of undefined"
+        const htmlBase64 = btoa(unescape(encodeURIComponent(fileContent)));
+        dataToSave.html = htmlBase64;
+        dataToSave.htmlEncoding = 'base64'; // Flag to indicate HTML is base64 encoded
         dataToSave.fileName = mainHtmlFile.name;
         dataToSave.isDirectory = isDirectory || filesToSave.length > 1;
         dataToSave.fileCount = filesToSave.length;
@@ -422,17 +426,25 @@ const DWebSaaSApp: React.FC = () => {
         if (filesToSave.length > 1) {
           const filesData: any = {};
           for (const file of filesToSave) {
-            const path = isDirectory && (file as any).webkitRelativePath 
+            // Sanitize path to avoid issues with GunDB/SEA parsing
+            // Remove any special characters that might cause issues
+            let path = isDirectory && (file as any).webkitRelativePath 
               ? (file as any).webkitRelativePath 
               : file.name;
+            
+            // Ensure path doesn't contain problematic characters for GunDB
+            // Replace any URL-like patterns or special characters
+            path = path.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9._\/-]/g, '_');
             
             // Read file content based on type
             if (file.type.startsWith('text/') || file.name.endsWith('.html') || file.name.endsWith('.htm') || 
                 file.name.endsWith('.css') || file.name.endsWith('.js') || file.name.endsWith('.json')) {
+              const content = await file.text();
               filesData[path] = {
-                content: await file.text(),
+                content: content,
                 type: file.type,
-                size: file.size
+                size: file.size,
+                originalPath: isDirectory && (file as any).webkitRelativePath ? (file as any).webkitRelativePath : file.name
               };
             } else {
               // For binary files, convert to base64
@@ -442,7 +454,8 @@ const DWebSaaSApp: React.FC = () => {
                 content: base64,
                 type: file.type,
                 size: file.size,
-                encoding: 'base64'
+                encoding: 'base64',
+                originalPath: isDirectory && (file as any).webkitRelativePath ? (file as any).webkitRelativePath : file.name
               };
             }
           }
@@ -466,7 +479,38 @@ const DWebSaaSApp: React.FC = () => {
       });
 
       // Salva i dati in GunDB
-      pageNode.put(dataToSave);
+      // Wrap in a try-catch to handle any GunDB/SEA parsing errors
+      try {
+        pageNode.put(dataToSave);
+      } catch (error: any) {
+        console.error('❌ [GUNDB] Errore durante il salvataggio:', error);
+        // Se fallisce, prova a salvare senza la struttura files complessa
+        if (dataToSave.files && Object.keys(dataToSave.files).length > 0) {
+          console.log('🔄 [GUNDB] Tentativo salvataggio semplificato...');
+          const simplifiedData = {
+            ...dataToSave,
+            files: undefined, // Rimuovi temporaneamente la struttura files
+            filesNote: 'Files structure removed due to parsing error'
+          };
+          try {
+            pageNode.put(simplifiedData);
+            setStatus({ 
+              message: 'App salvata (senza struttura files - potrebbe essere un problema con URL esterni nell\'HTML)', 
+              type: 'info' 
+            });
+            return;
+          } catch (retryError: any) {
+            console.error('❌ [GUNDB] Errore anche con dati semplificati:', retryError);
+            setStatus({ 
+              message: `Errore salvataggio GunDB: ${retryError.message}. Prova a pubblicare in modalità Relay invece.`, 
+              type: 'error' 
+            });
+            return;
+          }
+        } else {
+          throw error;
+        }
+      }
       console.log(`📤 [${publishMode.toUpperCase()}] Dati inviati a GunDB con put()`);
 
       // Save user mapping immediatamente

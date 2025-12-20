@@ -39,7 +39,7 @@
     "react-router-dom": "^7.6.2",
     "shogun-button-react": "^6.4.4",
     "shogun-core": "^6.4.4",
-    "shogun-relay-sdk": "^1.2.3",
+    "shogun-relay-sdk": "^1.2.7",
     "shogun-relays": "^1.1.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
