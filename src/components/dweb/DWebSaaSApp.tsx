@@ -12,6 +12,7 @@ interface PublishedApp {
   publishedAt: number;
   fileName: string;
   ipfsHash?: string;
+  textareaHash?: string;
   publishMode?: PublishMode;
 }
 
@@ -127,13 +128,14 @@ const DWebSaaSApp: React.FC = () => {
       });
 
       setPublishedApps(prevApps => {
-        if (data && (data.html || data.ipfsHash)) {
+        if (data && (data.html || data.ipfsHash || data.textareaHash)) {
           // App esiste o è stata aggiornata
           const app: PublishedApp = {
             pageName: key,
             publishedAt: data.publishedAt || Date.now(),
             fileName: data.fileName || `${key}.html`,
             ipfsHash: data.ipfsHash,
+            textareaHash: data.textareaHash,
             publishMode: data.publishMode || 'gundb'
           };
 
@@ -580,6 +582,7 @@ const DWebSaaSApp: React.FC = () => {
             publishedAt: dataToSave.publishedAt || Date.now(),
             fileName: dataToSave.fileName || `${sanitizedPageName}.html`,
             ipfsHash: dataToSave.ipfsHash,
+            textareaHash: dataToSave.textareaHash,
             publishMode: dataToSave.publishMode || 'gundb'
           };
           console.log('➕ [GUNDB] App aggiunta ottimisticamente:', newApp);
@@ -594,7 +597,7 @@ const DWebSaaSApp: React.FC = () => {
         pageNode.once((savedData: any) => {
           console.log(`📥 [${publishMode.toUpperCase()}] Dati ricevuti da GunDB:`, savedData);
           
-          if (savedData && (savedData.html || savedData.ipfsHash)) {
+          if (savedData && (savedData.html || savedData.ipfsHash || savedData.textareaHash)) {
             console.log(`✅ [${publishMode.toUpperCase()}] Dati confermati salvati correttamente`);
             
             // Aggiorna la lista con i dati reali da GunDB
@@ -605,6 +608,7 @@ const DWebSaaSApp: React.FC = () => {
                 publishedAt: savedData.publishedAt || dataToSave.publishedAt || Date.now(),
                 fileName: savedData.fileName || dataToSave.fileName || `${sanitizedPageName}.html`,
                 ipfsHash: savedData.ipfsHash || dataToSave.ipfsHash,
+                textareaHash: savedData.textareaHash || dataToSave.textareaHash,
                 publishMode: savedData.publishMode || dataToSave.publishMode || 'gundb'
               };
               
@@ -880,6 +884,35 @@ const DWebSaaSApp: React.FC = () => {
                         </div>
                         <div className="text-xs text-base-content/40 mt-1.5">
                           Available via IPFS gateway
+                        </div>
+                      </div>
+                    )}
+                    
+                    {app.textareaHash && app.publishMode === 'textarea' && (
+                      <div className="mt-3 pt-3 border-t border-base-300/30">
+                        <div className="text-xs font-medium text-base-content/70 mb-1.5">🔗 Direct Link</div>
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={`/dweb/t/${app.textareaHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline truncate max-w-[200px]"
+                            title={`/dweb/t/${app.textareaHash}`}
+                          >
+                            /dweb/t/{app.textareaHash.substring(0, 20)}...
+                          </a>
+                          <button
+                            className="btn btn-xs btn-ghost"
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/dweb/t/${app.textareaHash}`);
+                            }}
+                            title="Copy direct link"
+                          >
+                            📋
+                          </button>
+                        </div>
+                        <div className="text-xs text-base-content/40 mt-1.5">
+                          Share without GunDB lookup (like textarea.my)
                         </div>
                       </div>
                     )}

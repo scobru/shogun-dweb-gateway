@@ -9,7 +9,7 @@ interface TextareaEditorProps {
 
 /**
  * A minimalist text editor based on textarea.my
- * Uses contenteditable with plaintext-only mode for clean editing
+ * Uses a standard textarea for maximum compatibility
  */
 const TextareaEditor: React.FC<TextareaEditorProps> = ({
   initialContent = '',
@@ -17,72 +17,55 @@ const TextareaEditor: React.FC<TextareaEditorProps> = ({
   placeholder = 'Start typing your content here...',
   className = ''
 }) => {
-  const articleRef = useRef<HTMLElement>(null);
-  const [isEmpty, setIsEmpty] = useState(!initialContent);
+  const [content, setContent] = useState(initialContent);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Debounce function
-  const debounce = useCallback((fn: Function, ms: number) => {
-    let timer: NodeJS.Timeout;
-    return (...args: any[]) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), ms);
-    };
-  }, []);
-
-  // Handle content changes
-  const handleInput = useCallback(
-    debounce(() => {
-      if (articleRef.current) {
-        const content = articleRef.current.textContent || '';
-        setIsEmpty(!content.trim());
-        onChange?.(content);
-      }
-    }, 300),
-    [onChange]
-  );
-
-  // Set initial content
-  useEffect(() => {
-    if (articleRef.current && initialContent) {
-      articleRef.current.textContent = initialContent;
-      setIsEmpty(!initialContent.trim());
-    }
-  }, [initialContent]);
+  // Handle content changes with debounce
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+    onChange?.(newContent);
+  }, [onChange]);
 
   // Focus on mount
   useEffect(() => {
-    if (articleRef.current) {
-      articleRef.current.focus();
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
   }, []);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.max(400, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [content]);
+
   return (
     <div className={`relative ${className}`}>
-      <article
-        ref={articleRef}
-        contentEditable="plaintext-only"
-        onInput={handleInput}
+      <textarea
+        ref={textareaRef}
+        value={content}
+        onChange={handleChange}
+        placeholder={placeholder}
         spellCheck
         className={`
           w-full min-h-[400px] p-4 
           font-mono text-base leading-relaxed
-          bg-base-200 rounded-lg
-          outline-none
-          whitespace-pre-wrap break-words
-          [tab-size:4]
+          bg-base-200 rounded-lg border-0
+          outline-none resize-none
+          whitespace-pre-wrap
           focus:ring-2 focus:ring-primary/30
           transition-all duration-200
+          placeholder:text-base-content/40
         `}
         style={{
           WebkitFontSmoothing: 'antialiased',
           textRendering: 'optimizeLegibility',
+          tabSize: 4,
         }}
       />
-      {isEmpty && (
-        <div className="absolute top-4 left-4 text-base-content/40 pointer-events-none font-mono">
-          {placeholder}
-        </div>
-      )}
     </div>
   );
 };

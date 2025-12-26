@@ -12,7 +12,6 @@ import { shogunConnector } from "shogun-button-react";
 import type { ShogunCore } from "shogun-core";
 import Gun from "gun";
 import "gun/sea";
-import "gun/lib/yson.js"
 import DWebSaaSApp from "./components/dweb/DWebSaaSApp";
 import DWebViewer from "./components/dweb/DWebViewer";
 import DWebFileServer from "./components/dweb/DWebFileServer";
