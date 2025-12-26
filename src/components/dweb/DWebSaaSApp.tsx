@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useShogun, ShogunButton } from 'shogun-button-react';
 import logo from '../../assets/logo.svg';
+import TextareaEditor from './TextareaEditor';
+import { compress } from '../../utils/compress';
 
-type PublishMode = 'gundb' | 'relay' | 'deals';
+type PublishMode = 'gundb' | 'relay' | 'deals' | 'textarea';
 
 interface PublishedApp {
   pageName: string;
@@ -25,6 +27,7 @@ const DWebSaaSApp: React.FC = () => {
   const [relayUrl, setRelayUrl] = useState('https://shogun-relay.scobrudot.dev');
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [ipfsHash, setIpfsHash] = useState<string>('');
+  const [textareaContent, setTextareaContent] = useState<string>('');
 
   // Helper to get userPub and username, even if not yet available from hook
   const getActualUserInfo = () => {
@@ -210,6 +213,12 @@ const DWebSaaSApp: React.FC = () => {
       // Relay mode: requires file (we'll do automatic upload)
       if (!selectedFile) {
         setStatus({ message: 'Error: Select an HTML file to upload to the relay', type: 'error' });
+        return;
+      }
+    } else if (publishMode === 'textarea') {
+      // Textarea mode: requires content
+      if (!textareaContent || !textareaContent.trim()) {
+        setStatus({ message: 'Error: Write some content in the editor', type: 'error' });
         return;
       }
     } else {
@@ -398,6 +407,25 @@ const DWebSaaSApp: React.FC = () => {
         dataToSave.ipfsHash = ipfsHash.trim();
         dataToSave.fileName = selectedFile ? selectedFile.name : `${sanitizedPageName}.html`;
         console.log('💾 [DEALS] Data ready for saving to GunDB:', dataToSave);
+      } else if (publishMode === 'textarea') {
+        // Textarea mode: compress content and save hash
+        console.log('✨ [TEXTAREA] Textarea mode, compressing content...');
+        try {
+          const compressedHash = await compress(textareaContent);
+          dataToSave.textareaHash = compressedHash;
+          dataToSave.fileName = `${sanitizedPageName}.txt`;
+          dataToSave.contentLength = textareaContent.length;
+          dataToSave.compressedLength = compressedHash.length;
+          console.log('💾 [TEXTAREA] Data ready for saving to GunDB:', {
+            originalLength: textareaContent.length,
+            compressedLength: compressedHash.length,
+            compressionRatio: ((1 - compressedHash.length / textareaContent.length) * 100).toFixed(1) + '%'
+          });
+        } catch (compressError: any) {
+          console.error('❌ [TEXTAREA] Compression error:', compressError);
+          setStatus({ message: `Compression error: ${compressError.message}`, type: 'error' });
+          return;
+        }
       } else {
         // GunDB mode: save HTML and all other files
         const filesToSave = selectedFiles.length > 0 ? selectedFiles : (selectedFile ? [selectedFile] : []);
@@ -833,11 +861,13 @@ const DWebSaaSApp: React.FC = () => {
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${
                           app.publishMode === 'gundb' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                           app.publishMode === 'relay' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                          app.publishMode === 'textarea' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                           'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                         }`}>
                           {app.publishMode === 'gundb' && '🗄️ GunDB'}
                           {app.publishMode === 'relay' && '🌐 IPFS Relay'}
                           {app.publishMode === 'deals' && '💎 IPFS Deal'}
+                          {app.publishMode === 'textarea' && '✨ Textarea'}
                         </span>
                       </div>
                     )}
@@ -911,11 +941,28 @@ const DWebSaaSApp: React.FC = () => {
             >
               3️⃣ IPFS Deals
             </button>
+            <button
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                publishMode === 'textarea' 
+                  ? 'bg-primary text-primary-content shadow-sm' 
+                  : 'bg-base-200 text-base-content/70 hover:bg-base-300'
+              }`}
+              onClick={() => {
+                setPublishMode('textarea');
+                setSelectedFile(null);
+                setSelectedFiles([]);
+                setIsDirectory(false);
+                setIpfsHash('');
+              }}
+            >
+              4️⃣ Textarea
+            </button>
           </div>
           <p className="text-xs text-base-content/50 mt-2">
             {publishMode === 'gundb' && 'Save HTML and assets directly to GunDB (supports folders with HTML, CSS, JS)'}
             {publishMode === 'relay' && 'Automatic upload of files/folder to IPFS relay (supports multi-file sites)'}
             {publishMode === 'deals' && 'Paste the IPFS CID obtained from the Deals app'}
+            {publishMode === 'textarea' && '✨ Write directly in the editor - content saved as compressed URL (inspired by textarea.my)'}
           </p>
         </div>
 
@@ -986,7 +1033,25 @@ const DWebSaaSApp: React.FC = () => {
           </div>
         )}
         
-        {publishMode !== 'deals' && (
+        {/* Textarea Editor */}
+        {publishMode === 'textarea' && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-base-content/70 mb-3">
+              ✍️ Write your content:
+            </label>
+            <TextareaEditor 
+              initialContent={textareaContent}
+              onChange={setTextareaContent}
+              placeholder="Start typing... Your content will be compressed and saved.\n\nTip: Start with # Title to set the page title."
+              className="mb-4"
+            />
+            <p className="text-xs text-base-content/50">
+              💡 Content is compressed using deflate and stored as a compact hash. Inspired by <a href="https://github.com/antonmedv/textarea" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">textarea.my</a>
+            </p>
+          </div>
+        )}
+
+        {publishMode !== 'deals' && publishMode !== 'textarea' && (
           <>
             <div 
               className="border-2 border-dashed border-primary/40 rounded-xl p-12 text-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 mb-4"
@@ -1060,7 +1125,7 @@ const DWebSaaSApp: React.FC = () => {
           onChange={handleFileSelect}
         />
 
-        {(selectedFile || selectedFiles.length > 0 || publishMode === 'deals' || publishMode === 'relay') && (
+        {(selectedFile || selectedFiles.length > 0 || publishMode === 'deals' || publishMode === 'relay' || (publishMode === 'textarea' && textareaContent)) && (
           <div className="mt-6 p-5 rounded-lg bg-base-200/50 border border-base-300/30">
             {selectedFiles.length > 1 ? (
               <div className="font-medium mb-4 text-base-content/90">

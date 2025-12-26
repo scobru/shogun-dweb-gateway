@@ -16,6 +16,7 @@ import "gun/lib/yson.js"
 import DWebSaaSApp from "./components/dweb/DWebSaaSApp";
 import DWebViewer from "./components/dweb/DWebViewer";
 import DWebFileServer from "./components/dweb/DWebFileServer";
+import DWebTextareaViewer from "./components/dweb/DWebTextareaViewer";
 
 import "./index.css";
 import "shogun-relays";
@@ -83,6 +84,7 @@ function ShogunApp({ shogun }: ShogunAppProps) {
           <Route path="/dweb/view/:username" element={<DWebViewer />} />
           <Route path="/dweb/view/:username/:pagename" element={<DWebViewer />} />
           <Route path="/dweb/file/:username/:pagename/*" element={<DWebFileServer />} />
+          <Route path="/dweb/t/:hash" element={<DWebTextareaViewer />} />
           <Route path="*" element={<Navigate to="/dweb" replace />} />
         </Routes>
       </ShogunButtonProvider>

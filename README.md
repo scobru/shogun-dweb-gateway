@@ -300,6 +300,12 @@ window.shogunDebug = {
 
 **Nota**: WebAuthn richiede HTTPS in produzione (funziona su localhost in sviluppo).
 
+## Ringraziamenti
+
+Un ringraziamento speciale a:
+
+- **[textarea.my](https://textarea.my)** ([@antonmedv](https://github.com/antonmedv)) - La tecnologia di compressione URL che consente di salvare intere pagine come hash compressi. Il nostro "Textarea Mode" è ispirato da questo brillante progetto minimalista.
+
 ## Licenza
 
 MIT

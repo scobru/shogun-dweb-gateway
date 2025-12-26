@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useShogun } from 'shogun-button-react';
 import { ShogunRelaySDK } from 'shogun-relay-sdk';
+import { decompress } from '../../utils/compress';
 
 const DWebViewer: React.FC = () => {
   const { username, pagename } = useParams<{ username: string; pagename?: string }>();
@@ -422,6 +423,52 @@ const DWebViewer: React.FC = () => {
                 console.error('❌ [VIEWER] Modalità GunDB ma HTML non trovato');
                 setIsLoading(false);
                 setError('HTML non trovato in GunDB per questa app');
+              }
+            } else if (publishMode === 'textarea') {
+              // Modalità Textarea: decomprime hash e mostra contenuto
+              if (data.textareaHash) {
+                console.log('✨ [VIEWER] Caricamento da textarea (modalità textarea)');
+                decompress(data.textareaHash).then((decompressedContent) => {
+                  // Wrap content in basic HTML to display
+                  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${pageName}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { color-scheme: light dark; background-color: #fff; color: #161616; }
+    @media (prefers-color-scheme: dark) {
+      html { background-color: #000; color: #fff; }
+    }
+    article {
+      padding: 18px max(18px, calc(50vw - 400px));
+      width: 100%;
+      min-height: 100vh;
+      font: 18px / 1.5 system-ui;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <article>${decompressedContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</article>
+</body>
+</html>`;
+                  setAppHtml(htmlContent);
+                  setIsLoading(false);
+                  setError(null);
+                }).catch((e: any) => {
+                  console.error('❌ [VIEWER] Errore decompressione textarea:', e);
+                  setIsLoading(false);
+                  setError('Errore nella decompressione del contenuto textarea: ' + e.message);
+                });
+              } else {
+                console.error('❌ [VIEWER] Modalità textarea ma hash non trovato');
+                setIsLoading(false);
+                setError('Hash textarea non trovato per questa app');
               }
             } else if (publishMode === 'relay' || publishMode === 'deals') {
               // Modalità IPFS (relay o deals): carica da IPFS gateway
