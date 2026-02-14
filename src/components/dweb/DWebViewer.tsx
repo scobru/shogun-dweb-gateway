@@ -665,13 +665,15 @@ const DWebViewer: React.FC = () => {
   }
 
   // Renderizza l'HTML in un iframe con isolamento completo
+  // SECURITY: Removed 'allow-same-origin' to prevent XSS and access to parent storage.
+  // The iframe content will run in a unique origin.
   return (
     <div className="w-full h-screen bg-white">
       <iframe
         ref={iframeRef}
         className="w-full h-full border-0"
         title={`App ${username}/${pageName}`}
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        sandbox="allow-scripts allow-forms allow-popups"
         style={{ backgroundColor: 'white' }}
       />
     </div>

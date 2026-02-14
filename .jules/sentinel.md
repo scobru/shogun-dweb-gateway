@@ -1,0 +1,4 @@
+## 2025-05-15 - DWebViewer iframe Isolation
+**Vulnerability:** The `DWebViewer` component used `sandbox="allow-same-origin allow-scripts ..."` for an iframe populated via `doc.write()`. This configuration allows the sandboxed content to access the parent application's DOM and storage (localStorage, cookies), leading to a potential XSS vulnerability where malicious DWeb apps could steal user sessions.
+**Learning:** `allow-same-origin` in a sandboxed iframe effectively disables the Same-Origin Policy protection when the content is dynamically written or loaded from the same origin.
+**Prevention:** Remove `allow-same-origin` from `sandbox` attributes when rendering untrusted content. If the content requires storage access, it should be served from a distinct domain (e.g., a user-specific subdomain) to ensure isolation.
