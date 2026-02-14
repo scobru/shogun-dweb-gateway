@@ -99,8 +99,28 @@ function App() {
   // First effect: fetch relays asynchronously
   useEffect(() => {
     async function fetchRelays() {
+      // ⚡ Bolt Optimization: Use cached relays to start immediately (stale-while-revalidate)
+      let usedCache = false;
+      const CACHE_KEY = "shogun_relays_cache";
+
       try {
-        setIsLoadingRelays(true);
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setRelays(parsed);
+            setIsLoadingRelays(false); // Unblock app immediately
+            usedCache = true;
+            console.log("⚡ Bolt: Used cached relays for fast startup");
+          }
+        }
+      } catch (e) {
+        console.warn("Error reading relay cache", e);
+      }
+
+      try {
+        if (!usedCache) setIsLoadingRelays(true);
+
         const fetchedRelays = await window.ShogunRelays.forceListUpdate();
 
         console.log("Fetched relays:", fetchedRelays);
@@ -111,11 +131,26 @@ function App() {
             ? fetchedRelays
             : ["https://shogun-relay.scobrudot.dev/gun"];
 
-        setRelays(peersToUse);
+        // Update cache for next time
+        localStorage.setItem(CACHE_KEY, JSON.stringify(peersToUse));
+
+        // Only update state if we didn't use cache (to avoid re-init)
+        // or if we want to ensure eventual consistency
+        if (!usedCache) {
+          setRelays(peersToUse);
+        } else {
+          // If we used cache, we rely on background update for next session
+          // to avoid disrupting the current session with a re-init
+          console.log(
+            "⚡ Bolt: Relays updated in background for next session"
+          );
+        }
       } catch (error) {
         console.error("Error fetching relays:", error);
-        // Fallback to default peer
-        setRelays(["https://shogun-relay.scobrudot.dev/gun"]);
+        // Fallback to default peer only if we didn't use cache
+        if (!usedCache) {
+          setRelays(["https://shogun-relay.scobrudot.dev/gun"]);
+        }
       } finally {
         setIsLoadingRelays(false);
       }
