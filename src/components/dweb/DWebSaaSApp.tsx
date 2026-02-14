@@ -843,7 +843,8 @@ const DWebSaaSApp: React.FC = () => {
                       {app.pageName}.{displayUsername}.dweb.app
                     </Link>
                     <button
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-error/10 text-error hover:text-error"
+                      aria-label={`Delete ${app.pageName}`}
+                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-error/10 focus:bg-error/10 text-error hover:text-error focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2"
                       onClick={() => handleDeleteApp(app.pageName)}
                       title={`Delete ${app.pageName}`}
                     >
@@ -902,6 +903,7 @@ const DWebSaaSApp: React.FC = () => {
                             /dweb/t/{app.textareaHash.substring(0, 20)}...
                           </a>
                           <button
+                            aria-label="Copy direct link"
                             className="btn btn-xs btn-ghost"
                             onClick={() => {
                               navigator.clipboard.writeText(`${window.location.origin}/dweb/t/${app.textareaHash}`);
