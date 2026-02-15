@@ -29,6 +29,7 @@ const DWebSaaSApp: React.FC = () => {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [ipfsHash, setIpfsHash] = useState<string>('');
   const [textareaContent, setTextareaContent] = useState<string>('');
+  const [deletingApp, setDeletingApp] = useState<string | null>(null);
 
   // Helper to get userPub and username, even if not yet available from hook
   const getActualUserInfo = () => {
@@ -677,10 +678,12 @@ const DWebSaaSApp: React.FC = () => {
       return;
     }
 
+    setDeletingApp(appPageName);
     const actualUserInfo = getActualUserInfo();
     const actualUserPub = actualUserInfo.userPub || userPub;
 
     if (!actualUserPub) {
+      setDeletingApp(null);
       setStatus({ message: 'Error: User not authenticated', type: 'error' });
       return;
     }
@@ -690,12 +693,14 @@ const DWebSaaSApp: React.FC = () => {
     try {
       const gunInstance = sdk?.gun || (window as any).shogun?.gun || (window as any).gun;
       if (!gunInstance) {
+        setDeletingApp(null);
         setStatus({ message: 'Error: GunDB not available', type: 'error' });
         return;
       }
 
       const user = gunInstance.user();
       if (!user.is) {
+        setDeletingApp(null);
         setStatus({ message: 'Error: User not authenticated correctly', type: 'error' });
         return;
       }
@@ -705,6 +710,7 @@ const DWebSaaSApp: React.FC = () => {
 
       // Delete the node using put(null)
       pageNode.put(null, (ack: any) => {
+        setDeletingApp(null);
         if (ack?.err) {
           setStatus({ message: 'Deletion error: ' + ack.err, type: 'error' });
           return;
@@ -722,6 +728,7 @@ const DWebSaaSApp: React.FC = () => {
       });
 
     } catch (error: any) {
+      setDeletingApp(null);
       setStatus({ message: 'Error: ' + error.message, type: 'error' });
     }
   };
@@ -843,13 +850,20 @@ const DWebSaaSApp: React.FC = () => {
                       {app.pageName}.{displayUsername}.dweb.app
                     </Link>
                     <button
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-error/10 text-error hover:text-error"
+                      type="button"
+                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-error/10 text-error hover:text-error disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => handleDeleteApp(app.pageName)}
                       title={`Delete ${app.pageName}`}
+                      aria-label={`Delete app ${app.pageName}`}
+                      disabled={deletingApp === app.pageName}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      {deletingApp === app.pageName ? (
+                        <span className="loading loading-spinner loading-xs text-error"></span>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      )}
                     </button>
                   </div>
                   
