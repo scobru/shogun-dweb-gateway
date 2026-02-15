@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 /**
  * URL-based text compression utilities
  * 
@@ -11,21 +13,15 @@
  * @returns Base64url-encoded compressed string
  */
 export async function compress(text: string): Promise<string> {
-  const byteArray = new TextEncoder().encode(text);
-  const stream = new CompressionStream('deflate-raw');
-  const writer = stream.writable.getWriter();
-  writer.write(byteArray);
-  writer.close();
-  const buffer = await new Response(stream.readable).arrayBuffer();
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  const buffer = await new Response(stream).arrayBuffer();
   
-  // Use base64url encoding for URL-safe strings
-  const uint8 = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < uint8.length; i++) {
-    binary += String.fromCharCode(uint8[i]);
-  }
-  // Convert to base64 and make URL-safe
-  return btoa(binary)
+  // Use Buffer for fast base64 encoding (Node & Browser with polyfill)
+  // This avoids the O(N) loop and string concatenation issues of the original implementation
+  const binary = Buffer.from(buffer).toString('base64');
+
+  // Make URL-safe
+  return binary
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
