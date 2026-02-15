@@ -10,7 +10,6 @@ const DWebViewer: React.FC = () => {
   const [appHtml, setAppHtml] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const appFoundRef = useRef(false);
 
   const pageName = pagename || 'site';
@@ -629,19 +628,6 @@ const DWebViewer: React.FC = () => {
     });
   };
 
-  // Renderizza HTML in iframe quando disponibile
-  useEffect(() => {
-    if (appHtml && iframeRef.current) {
-      const iframe = iframeRef.current;
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(appHtml);
-        doc.close();
-      }
-    }
-  }, [appHtml]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen flex-col gap-4 bg-black text-green-400 font-mono">
@@ -665,13 +651,14 @@ const DWebViewer: React.FC = () => {
   }
 
   // Renderizza l'HTML in un iframe con isolamento completo
+  // SECURITY: allow-same-origin removed to prevent access to parent origin (cookies, storage, etc)
   return (
     <div className="w-full h-screen bg-white">
       <iframe
-        ref={iframeRef}
+        srcDoc={appHtml || ''}
         className="w-full h-full border-0"
         title={`App ${username}/${pageName}`}
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        sandbox="allow-scripts allow-forms allow-popups"
         style={{ backgroundColor: 'white' }}
       />
     </div>
